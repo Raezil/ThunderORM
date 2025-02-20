@@ -84,7 +84,7 @@ func TestCRUDOperations(t *testing.T) {
 	// Clean up after test.
 	defer orm.DB.ExecContext(ctx, "DROP TABLE TestUser;")
 
-	// Test insertion.
+	// --- Test Insertion ---
 	newUser := TestUser{
 		Id:   1,
 		Name: "Alice",
@@ -93,7 +93,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("Failed to insert new user: %v", err)
 	}
 
-	// Test retrieval: All.
+	// --- Test Retrieval: All ---
 	records, err := orm.All(ctx, TestUser{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve records: %v", err)
@@ -102,7 +102,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("Expected at least one record, got none")
 	}
 
-	// Test retrieval: Find.
+	// --- Test Retrieval: Find ---
 	found, err := orm.Find(ctx, TestUser{}, "1")
 	if err != nil {
 		t.Fatalf("Failed to find record: %v", err)
@@ -118,11 +118,33 @@ func TestCRUDOperations(t *testing.T) {
 		t.Errorf("Expected Name to be 'Alice', got '%s'", user.Name)
 	}
 
-	// Test deletion: Remove.
+	// --- Test Update ---
+	updatedUser := newUser
+	updatedUser.Name = "Bob"
+	if err := orm.Update(ctx, updatedUser); err != nil {
+		t.Fatalf("Failed to update record: %v", err)
+	}
+	// Verify update.
+	found, err = orm.Find(ctx, TestUser{}, "1")
+	if err != nil {
+		t.Fatalf("Error after update: %v", err)
+	}
+	if found == nil {
+		t.Fatalf("Expected to find updated record, got nil")
+	}
+	user, ok = found.(*TestUser)
+	if !ok {
+		t.Fatalf("Expected *TestUser type after update, got %T", found)
+	}
+	if user.Name != "Bob" {
+		t.Errorf("Expected Name to be 'Bob', got '%s'", user.Name)
+	}
+
+	// --- Test Deletion: Remove ---
 	if err := orm.Remove(ctx, TestUser{}, "1"); err != nil {
 		t.Fatalf("Failed to remove record: %v", err)
 	}
-
+	// Verify deletion.
 	found, err = orm.Find(ctx, TestUser{}, "1")
 	if err != nil {
 		t.Fatalf("Error after deletion: %v", err)
