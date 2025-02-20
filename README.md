@@ -43,8 +43,18 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Define your database configuration.
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "development",
+		DBName:   "development",
+		SSLMode:  "disable",
+	}
+
 	// Initialize the ORM with your database credentials.
-	orm, err := ThunderORM.NewORM(ctx, "goc", "development", "development")
+	orm, err := ThunderORM.NewORM(ctx, cfg)
 	if err != nil {
 		log.Fatalf("Error initializing ORM: %v", err)
 	}
@@ -74,7 +84,7 @@ import (
 	"github.com/Raezil/ThunderORM"
 )
 
-// User represents a record in the "users" table.
+// User represents a record in the "user" table.
 type User struct {
 	Id    int
 	Name  string
@@ -86,8 +96,18 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Define your database configuration.
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "development",
+		DBName:   "development",
+		SSLMode:  "disable",
+	}
+
 	// Initialize the ORM.
-	orm, err := ThunderORM.NewORM(ctx, "goc", "development", "development")
+	orm, err := ThunderORM.NewORM(ctx, cfg)
 	if err != nil {
 		log.Fatalf("Error initializing ORM: %v", err)
 	}
@@ -115,7 +135,7 @@ func main() {
 		fmt.Printf("%+v\n", user)
 	}
 
-	// Find a specific user by id.
+	// Find a specific user by Id.
 	foundUser, err := orm.Find(ctx, User{}, "1")
 	if err != nil {
 		log.Fatalf("Error finding user: %v", err)
@@ -127,7 +147,21 @@ func main() {
 		fmt.Printf("Found user: %+v\n", user)
 	}
 
-	// Remove a user by id.
+	// Update the user's name.
+	newUser.Name = "Bob"
+	if err := orm.Update(ctx, newUser); err != nil {
+		log.Fatalf("Error updating user: %v", err)
+	}
+	fmt.Println("Updated user.")
+
+	// Use the Where method to retrieve users with Name 'Bob'.
+	results, err := orm.Where(ctx, User{}, `"Name" = $1`, "Bob")
+	if err != nil {
+		log.Fatalf("Error executing where query: %v", err)
+	}
+	fmt.Printf("Found %d user(s) named Bob\n", len(results))
+
+	// Remove the user by Id.
 	if err := orm.Remove(ctx, User{}, "1"); err != nil {
 		log.Fatalf("Error removing user: %v", err)
 	}
