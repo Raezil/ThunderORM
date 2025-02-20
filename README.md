@@ -6,7 +6,7 @@ ThunderORM is a lightweight ORM library for Go that simplifies working with Post
 
 - **Encapsulated Connection:** Manage your database connection through the `ORM` struct.
 - **Migrations:** Automatically scan and execute SQL migration files.
-- **CRUD Operations:** Simple API for Create, Read, and Delete operations.
+- **CRUD Operations:** Simple API for Create, Read, Update and Delete operations.
 - **Context-Aware:** All operations accept a `context.Context` to support cancellations and timeouts.
 - **Parameterized Queries:** Prevent SQL injection with secure query handling.
 
