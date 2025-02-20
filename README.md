@@ -15,7 +15,7 @@ ThunderORM is a lightweight ORM library for Go that simplifies working with Post
 To install ThunderORM, run:
 
 ```bash
-go get github.com/yourusername/ThunderORM
+go get github.com/Raezil/ThunderORM
 ```
 
 
