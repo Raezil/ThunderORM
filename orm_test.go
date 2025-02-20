@@ -2,7 +2,6 @@ package ThunderORM_test
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,7 +24,7 @@ func createTestMigrationFile(t *testing.T, dir string) {
 		Name TEXT NOT NULL
 	);`
 	migrationFile := filepath.Join(dir, "001_create_testuser.sql")
-	if err := ioutil.WriteFile(migrationFile, []byte(migrationSQL), 0644); err != nil {
+	if err := os.WriteFile(migrationFile, []byte(migrationSQL), 0644); err != nil {
 		t.Fatalf("Failed to write migration file: %v", err)
 	}
 }
@@ -51,17 +50,14 @@ func TestAutoMigrate(t *testing.T) {
 	}
 	defer orm.DB.Close()
 
-	// Create a temporary directory for migration files.
-	tempDir, err := ioutil.TempDir("", "sql")
+	tempDir, err := os.MkdirTemp("", "sql")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Create a migration file that creates the TestUser table.
 	createTestMigrationFile(t, tempDir)
 
-	// Run migrations.
 	if err := orm.AutoMigrate(ctx, tempDir); err != nil {
 		t.Fatalf("AutoMigrate failed: %v", err)
 	}
@@ -78,17 +74,17 @@ func TestCRUDOperations(t *testing.T) {
 	defer orm.DB.Close()
 
 	// Ensure the TestUser table exists.
-	_, err = orm.DB.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS TestUser (
+	createTableQuery := `CREATE TABLE IF NOT EXISTS TestUser (
 		Id INTEGER PRIMARY KEY,
 		Name TEXT NOT NULL
-	);`)
-	if err != nil {
+	);`
+	if _, err := orm.DB.ExecContext(ctx, createTableQuery); err != nil {
 		t.Fatalf("Failed to create TestUser table: %v", err)
 	}
 	// Clean up after test.
 	defer orm.DB.ExecContext(ctx, "DROP TABLE TestUser;")
 
-	// --- Test Insertion ---
+	// Test insertion.
 	newUser := TestUser{
 		Id:   1,
 		Name: "Alice",
@@ -97,7 +93,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("Failed to insert new user: %v", err)
 	}
 
-	// --- Test Retrieval: All ---
+	// Test retrieval: All.
 	records, err := orm.All(ctx, TestUser{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve records: %v", err)
@@ -106,7 +102,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("Expected at least one record, got none")
 	}
 
-	// --- Test Retrieval: Find ---
+	// Test retrieval: Find.
 	found, err := orm.Find(ctx, TestUser{}, "1")
 	if err != nil {
 		t.Fatalf("Failed to find record: %v", err)
@@ -122,11 +118,11 @@ func TestCRUDOperations(t *testing.T) {
 		t.Errorf("Expected Name to be 'Alice', got '%s'", user.Name)
 	}
 
-	// --- Test Deletion: Remove ---
+	// Test deletion: Remove.
 	if err := orm.Remove(ctx, TestUser{}, "1"); err != nil {
 		t.Fatalf("Failed to remove record: %v", err)
 	}
-	// Verify deletion.
+
 	found, err = orm.Find(ctx, TestUser{}, "1")
 	if err != nil {
 		t.Fatalf("Error after deletion: %v", err)

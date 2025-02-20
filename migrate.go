@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
 // Data reads the file at the given path and returns its content.
 func Data(path string) (string, error) {
-	file, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("cannot read file %s: %w", path, err)
 	}
-	return string(file), nil
+	return string(content), nil
 }
 
 // FindMigrations walks through the root directory to find all files with the given extension.
