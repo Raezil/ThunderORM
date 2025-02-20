@@ -35,7 +35,7 @@ import (
 	"log"
 	"time"
 
-	"ThunderORM"
+	"github.com/Raezil/ThunderORM"
 )
 
 func main() {
@@ -71,7 +71,7 @@ import (
 	"log"
 	"time"
 
-	"ThunderORM"
+	"github.com/Raezil/ThunderORM"
 )
 
 // User represents a record in the "users" table.
