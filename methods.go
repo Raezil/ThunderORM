@@ -26,8 +26,7 @@ func Get(i interface{}, key string) interface{} {
 	if !IsStruct(i) {
 		return nil
 	}
-	m := structs.Map(i)
-	return m[key]
+	return structs.Map(i)[key]
 }
 
 func Set(i interface{}, field string, value interface{}) interface{} {

@@ -1,6 +1,8 @@
 package ThunderORM
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // Scanning returns a slice of pointers to the fields of the struct pointed to by u.
 // It is used to build the targets for row scanning.
