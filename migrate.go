@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 // Data reads the file at the given path and returns its content.
@@ -32,6 +33,8 @@ func FindMigrations(root, ext string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to walk directory: %w", err)
 	}
+	// Ensure migrations are sorted for predictable order.
+	sort.Strings(migrations)
 	return migrations, nil
 }
 

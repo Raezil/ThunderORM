@@ -10,7 +10,6 @@ import (
 	"ThunderORM"
 )
 
-// TestUser is a sample model used for testing CRUD operations.
 type TestUser struct {
 	Id   int
 	Name string
@@ -20,8 +19,8 @@ type TestUser struct {
 func createTestMigrationFile(t *testing.T, dir string) {
 	t.Helper()
 	migrationSQL := `CREATE TABLE IF NOT EXISTS TestUser (
-		Id INTEGER PRIMARY KEY,
-		Name TEXT NOT NULL
+		"Id" INTEGER PRIMARY KEY,
+		"Name" TEXT NOT NULL
 	);`
 	migrationFile := filepath.Join(dir, "001_create_testuser.sql")
 	if err := os.WriteFile(migrationFile, []byte(migrationSQL), 0644); err != nil {
@@ -33,7 +32,15 @@ func TestNewORM(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	orm, err := ThunderORM.NewORM(ctx, "goc", "password", "ormtest")
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "password",
+		DBName:   "ormtest",
+		SSLMode:  "disable",
+	}
+	orm, err := ThunderORM.NewORM(ctx, cfg)
 	if err != nil {
 		t.Fatalf("Failed to create ORM: %v", err)
 	}
@@ -44,7 +51,15 @@ func TestAutoMigrate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	orm, err := ThunderORM.NewORM(ctx, "goc", "password", "ormtest")
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "password",
+		DBName:   "ormtest",
+		SSLMode:  "disable",
+	}
+	orm, err := ThunderORM.NewORM(ctx, cfg)
 	if err != nil {
 		t.Fatalf("Failed to create ORM: %v", err)
 	}
@@ -67,7 +82,15 @@ func TestCRUDOperations(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	orm, err := ThunderORM.NewORM(ctx, "goc", "password", "ormtest")
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "password",
+		DBName:   "ormtest",
+		SSLMode:  "disable",
+	}
+	orm, err := ThunderORM.NewORM(ctx, cfg)
 	if err != nil {
 		t.Fatalf("Failed to create ORM: %v", err)
 	}
@@ -75,14 +98,14 @@ func TestCRUDOperations(t *testing.T) {
 
 	// Ensure the TestUser table exists.
 	createTableQuery := `CREATE TABLE IF NOT EXISTS TestUser (
-		Id INTEGER PRIMARY KEY,
-		Name TEXT NOT NULL
+		"Id" INTEGER PRIMARY KEY,
+		"Name" TEXT NOT NULL
 	);`
 	if _, err := orm.DB.ExecContext(ctx, createTableQuery); err != nil {
 		t.Fatalf("Failed to create TestUser table: %v", err)
 	}
 	// Clean up after test.
-	defer orm.DB.ExecContext(ctx, "DROP TABLE TestUser;")
+	defer orm.DB.ExecContext(ctx, `DROP TABLE TestUser;`)
 
 	// --- Test Insertion ---
 	newUser := TestUser{
@@ -108,7 +131,7 @@ func TestCRUDOperations(t *testing.T) {
 		t.Fatalf("Failed to find record: %v", err)
 	}
 	if found == nil {
-		t.Fatalf("Expected to find record with id 1, but got nil")
+		t.Fatalf("Expected to find record with Id 1, but got nil")
 	}
 	user, ok := found.(*TestUser)
 	if !ok {
@@ -151,5 +174,57 @@ func TestCRUDOperations(t *testing.T) {
 	}
 	if found != nil {
 		t.Fatalf("Expected record to be deleted, but found one")
+	}
+}
+
+// TestWhere validates the functionality of the Where method.
+func TestWhere(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cfg := ThunderORM.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "goc",
+		Password: "password",
+		DBName:   "ormtest",
+		SSLMode:  "disable",
+	}
+	orm, err := ThunderORM.NewORM(ctx, cfg)
+	if err != nil {
+		t.Fatalf("Failed to create ORM: %v", err)
+	}
+	defer orm.DB.Close()
+
+	// Ensure the TestUser table exists.
+	createTableQuery := `CREATE TABLE IF NOT EXISTS TestUser (
+		"Id" INTEGER PRIMARY KEY,
+		"Name" TEXT NOT NULL
+	);`
+	if _, err := orm.DB.ExecContext(ctx, createTableQuery); err != nil {
+		t.Fatalf("Failed to create TestUser table: %v", err)
+	}
+	// Clean up after test.
+	defer orm.DB.ExecContext(ctx, `DROP TABLE TestUser;`)
+
+	// Insert sample users.
+	users := []TestUser{
+		{Id: 1, Name: "Alice"},
+		{Id: 2, Name: "Bob"},
+		{Id: 3, Name: "Alice"},
+	}
+	for _, user := range users {
+		if err := orm.New(ctx, user); err != nil {
+			t.Fatalf("Failed to insert user: %v", err)
+		}
+	}
+
+	// Retrieve users where Name = 'Alice'
+	results, err := orm.Where(ctx, TestUser{}, `"Name" = $1`, "Alice")
+	if err != nil {
+		t.Fatalf("Where query failed: %v", err)
+	}
+	if len(results) != 2 {
+		t.Errorf("Expected 2 records, got %d", len(results))
 	}
 }
