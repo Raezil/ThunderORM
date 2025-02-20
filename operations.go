@@ -128,3 +128,31 @@ func (o *ORM) Update(ctx context.Context, i interface{}) error {
 	}
 	return nil
 }
+
+// Where retrieves records from the table corresponding to the struct type of u
+// that satisfy the provided condition.
+// The condition should be a valid SQL WHERE clause (without the "WHERE" keyword),
+// and args are the corresponding parameter values.
+func (o *ORM) Where(ctx context.Context, u interface{}, condition string, args ...interface{}) ([]interface{}, error) {
+	tableName := Name(u)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s", tableName, condition)
+	rows, err := o.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query failed: %w", err)
+	}
+	defer rows.Close()
+
+	var results []interface{}
+	t := reflect.TypeOf(u)
+	for rows.Next() {
+		val := reflect.New(t).Interface()
+		if err := rows.Scan(Scanning(val)...); err != nil {
+			return nil, fmt.Errorf("failed scanning row: %w", err)
+		}
+		results = append(results, val)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return results, nil
+}
