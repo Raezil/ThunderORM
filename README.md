@@ -1,2 +1,2 @@
 # GoORM
-Object Relational Mapper in Golang
+> Object Relational Mapper in Golang
