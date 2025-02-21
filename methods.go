@@ -7,22 +7,27 @@ import (
 	"github.com/fatih/structs"
 )
 
+// IsStruct returns true if the given interface is a struct.
 func IsStruct(i interface{}) bool {
 	return structs.IsStruct(i)
 }
 
+// Name returns the name of the struct.
 func Name(i interface{}) string {
 	return structs.Name(i)
 }
 
+// Fields returns the names of the fields in the struct.
 func Fields(i interface{}) []string {
 	return structs.Names(i)
 }
 
+// Values returns the values of the fields in the struct.
 func Values(i interface{}) []interface{} {
 	return structs.Values(i)
 }
 
+// Get returns the value of the field in a struct.
 func Get(i interface{}, key string) interface{} {
 	if !IsStruct(i) {
 		return nil
