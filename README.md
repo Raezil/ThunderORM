@@ -175,6 +175,12 @@ This example demonstrates how to:
   - Find a user by their ID using the Find method.
   - Delete a user with the Remove method.
 
-## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request with your suggestions or improvements.
+## **📜 Contributing**
+Want to improve ThunderORM? 🚀  
+1. Fork the repo  
+2. Create a feature branch (`git checkout -b feature-new`)  
+3. Commit your changes (`git commit -m "Added feature"`)  
+4. Push to your branch (`git push origin feature-new`)  
+5. Submit a PR!  
+
